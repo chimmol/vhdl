@@ -1,4 +1,8 @@
 # vhdl
+
 VHDL CODE 
+
 // THIS IS CODE FOR STUDENTS IN MY CLASS 
 
+
+//  한글
