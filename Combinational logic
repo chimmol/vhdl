@@ -1,0 +1,27 @@
+//full adder
+
+library ieee ; 
+use ieee.std_logic_1164.all; 
+use ieee.std_logic_arith.all; 
+use ieee.std_logic_unsigned.all; 
+
+
+entity fa_2 is
+	port ( 
+		a,   b,    c : in 	integer range 0 to 1  ; 
+		sum, carry   : out 	std_logic
+	 ) ; 
+end fa_2 ; 
+
+architecture design of fa_2 is
+	signal temp : std_logic_vector ( 1 downto 0 ) ; 
+begin 
+
+	process( a, b, c )
+    begin 
+		temp <= conv_std_logic_vector ( a + b + c , 2) ;
+    end process ; 
+    
+    sum <= temp(0) ; 
+    carry <= temp(1) ; 
+end design ; 
