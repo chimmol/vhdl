@@ -1,0 +1,27 @@
+--------- 8 * 3 encoder by if ----
+library ieee;
+use ieee.std_logic_1164.all;
+----------------------------------
+entity encoder_8_3 is
+	port( a : in std_logic_vector(7 downto 0);
+		  b : out std_logic_vector(2 downto 0 )
+		  );
+end encoder_8_3;
+-----------------------------------------------
+architecture sam of encoder_8_3 is
+begin
+	process(a)
+	begin
+		case a is
+			when "00000001" => b <= "000" ; 
+			when x"02" => b <= o"1" ;
+			when x"04" => b <= o"2" ;
+			when x"08" => b <= o"3" ;
+			when x"10" => b <= o"4" ;
+			when x"20" => b <= o"5" ;
+			when x"40" => b <= o"6" ;
+			when x"80" => b <= o"7" ;
+			when others => b <="000"
+		end case ;		
+	end process;
+end sam;
