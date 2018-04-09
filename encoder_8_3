@@ -2,26 +2,48 @@
 library ieee;
 use ieee.std_logic_1164.all;
 ----------------------------------
-entity encoder_8_3 is
+entity P_encoder_8_3 is
 	port( a : in std_logic_vector(7 downto 0);
-		  b : out std_logic_vector(2 downto 0 )
+	      y : out std_logic_vector(2 downto 0 ) ; 
+	      v : out std_logic  
 		  );
-end encoder_8_3;
+end P_encoder_8_3;
 -----------------------------------------------
-architecture sam of encoder_8_3 is
+architecture sam of P_encoder_8_3 is
 begin
 	process(a)
 	begin
-		case a is
-			when "00000001" => b <= "000" ; 
-			when x"02" => b <= o"1" ;
-			when x"04" => b <= o"2" ;
-			when x"08" => b <= o"3" ;
-			when x"10" => b <= o"4" ;
-			when x"20" => b <= o"5" ;
-			when x"40" => b <= o"6" ;
-			when x"80" => b <= o"7" ;
-			when others => b <="000"
-		end case ;		
+	        --  우선순위인코더
+	       	if a(7) = '1' then 
+			b <= o"7" ;  v = '1' ; 
+		elsif a(6) = '1' then 
+			b <= o"6" ;  v = '1' ;
+		elsif a(5) = '1' then 
+			b <= o"5" ;  v = '1' ;
+		elsif a(4) = '1' then 
+			b <= o"4" ;  v = '1' ;
+		elsif a(3) = '1' then 
+			b <= o"3" ;  v = '1' ;
+		elsif a(2) = '1' then 
+			b <= o"2" ;  v = '1' ;
+		elsif a(1) = '1' then 
+			b <= o"1" ;  v = '1' ;
+		elsif a(0) = '1' then 
+			b <= o"0" ;  v = '1' ;
+		else
+			b <= o"0" ;  v = '0' ;			
+		end if; 
+                        
+		--case a is
+		--	when "00000001" => b <= "000" ; 
+		--	when x"02" => b <= o"1" ;
+		--	when x"04" => b <= o"2" ;
+		--	when x"08" => b <= o"3" ;
+		--	when x"10" => b <= o"4" ;
+		--	when x"20" => b <= o"5" ;
+		--	when x"40" => b <= o"6" ;
+		--	when x"80" => b <= o"7" ;
+		--	when others => b <="000"
+		--end case ;		
 	end process;
 end sam;
