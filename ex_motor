@@ -1,0 +1,122 @@
+library ieee; 
+use ieee.std_logic_1164.all; 
+
+entity ex_motor is
+	port (   clk : in std_logic ;      -- 50Mhz
+				
+				all_stop : in std_logic ;     -- dip sw 0 
+					
+				s : in std_logic_vector( 0 to 3 );   -- led sensor 
+				
+				l_pwm : out std_logic;    -- left motor
+				l_dir : out std_logic;
+				l_en : out std_logic;
+				
+				r_pwm : out std_logic;    -- righe motor 
+				r_dir : out std_logic;
+				r_en : out std_logic
+				
+				);
+end ex_motor ; 
+
+architecture design of ex_motor is
+
+component pwm_generate is
+	port ( 
+		clk : in std_logic ;    -- 50M
+		duty_counter : in std_logic_vector ( 7 downto 0 )  ; --event_light: out std_logic ; 
+		m_out : out std_logic );
+end component pwm_generate ;
+
+signal duty_counter_l, duty_counter_r : std_logic_vector ( 7 downto 0 ); 
+signal motor_clk : std_logic ; 
+signal motor_div_counter : integer range 0 to 500000 ;
+
+
+type states is ( go, go_slow, r90, r60, r30, l90, l60, l30, stop );
+signal current_drive, next_drive : states ; 
+signal m_out_l , m_out_r : std_logic ; 
+
+begin 
+
+pwm_gen_l : pwm_generate port map ( clk , duty_counter_l,  m_out_l ) ;
+pwm_gen_2 : pwm_generate port map ( clk , duty_counter_r,  m_out_r ) ;
+
+
+led_sense : process ( s )                  -- led sense
+begin 
+	case s is
+		when "1111" => next_drive <= go ; 
+		when "1110" => next_drive <= r90 ; 
+		when "1101" => next_drive <= r30 ; 
+		when "1100" => next_drive <= r90 ;   -- r60
+		when "1011" => next_drive <= l30 ;		
+		when "1010" => next_drive <= l30 ;
+		when "1001" => next_drive <= go_slow ; 
+		when "1000" => next_drive <= R90 ;
+		when "0111" => next_drive <= l90 ; 
+		
+		when "0110" => next_drive <= R90 ;
+		when "0101" => next_drive <= R30 ;
+		when "0100" => next_drive <= R30 ;
+		when "0011" => next_drive <= l90 ;   --l60
+		
+		when "0010" => next_drive <= l30 ;
+		when "0001" => next_drive <= l90 ;    --
+		when "0000" => next_drive <= stop ;
+		
+		when others => next_drive <= R30 ; 
+	end case ; 
+end process ; 
+
+state_action : process ( next_drive )      -- state 
+begin 
+	case next_drive is 
+		when go => duty_counter_l <= "01100100" ; duty_counter_r <= "01100100" ;          -- 100/100
+		when go_slow => duty_counter_l <= "00110010" ; duty_counter_r <= "00110010" ;     -- 50/50
+		when l90 => duty_counter_l <= "00001010" ; duty_counter_r <= "10010110" ;         -- 10/100   10010110=150
+		when l60 => duty_counter_l <= "00101000" ; duty_counter_r <= "01100100" ;         -- 40/100
+		when l30 => duty_counter_l <= "01000110" ; duty_counter_r <= "01100100" ;         -- 70/100
+		
+		when R90 => duty_counter_l <= "10010110" ; duty_counter_r <= "00001010" ;         -- 100/10    10010110=150
+		when R60 => duty_counter_l <= "01100100" ; duty_counter_r <= "00101000" ;         -- 100/40
+		when R30 => duty_counter_l <= "01100100" ; duty_counter_r <= "01000110" ;         -- 100/70
+		when stop => duty_counter_l <= "00000000" ; duty_counter_r <= "00000000" ;        -- 0/0
+		when others =>	duty_counter_l <= "00000000" ; duty_counter_r <= "00000000" ;	    -- 0/0
+	end case ; 
+end process ; 	
+
+
+motor_clk_gen : process (clk )
+	
+	begin
+		if clk'event and clk = '1' then 
+			if motor_div_counter= 250 then      -- 5000
+				motor_div_counter <= 0 ; 
+				motor_clk <= not motor_clk ;
+			else
+				motor_div_counter <= motor_div_counter + 1; 
+			end if; 
+		end if ; 
+	end process; 
+
+motor_out : process ( m_out_l, m_out_r, clk  )
+				begin	
+					if clk'event and clk = '1' then 
+						if all_stop = '0' then    -- all motor stop 
+							l_en <= '0' ; 
+							r_en <= '0' ; 
+						else 
+							l_pwm <= m_out_l ; 
+							l_dir <= '0' ; 
+							l_en <= '0' ; 							
+							
+							r_pwm <= m_out_r ;
+							r_dir <= '0' ; 
+							r_en <= '0' ; 
+						end if ;  -- all_stop 
+					end if ; -- clk 
+					
+				end process ; 
+
+end design ; 				
