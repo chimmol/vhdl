@@ -1,3 +1,5 @@
+-- line tracer ( device : EP4CE6E22C8N )
+
 library ieee; 
 use ieee.std_logic_1164.all; 
 
