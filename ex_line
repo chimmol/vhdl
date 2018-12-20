@@ -1,0 +1,96 @@
+library ieee; 
+use ieee.std_logic_1164.all ; 
+use ieee.std_logic_unsigned.all ; 
+
+entity ex_line is 
+	port ( 
+		clk	 : in  std_logic ; 
+		sensor : in  std_logic_vector ( 3 downto 0 ); 
+		
+		l_pwm : out std_logic ; 
+		l_dir : out std_logic ; 
+		l_en  : out std_logic ; 
+		
+		r_pwm : out std_logic ; 
+		r_dir : out std_logic ; 
+		r_en  : out std_logic  
+
+	);
+end entity ; 
+
+architecture sam of ex_line is
+
+component pwm_generate is
+	port ( clk  : in std_logic ;       -- 50Mhz
+			duty_counter :in std_logic_vector( 7 downto 0 ) ; 
+			m_out : out std_logic 
+		); 
+end component ; 
+
+type states is ( go, back, L, WL,  R, WR );   --각 상태는 조별로 
+signal current_drive , next_drive : states ; 
+
+signal duty_counter_l : std_logic_vector(7 downto 0) ; 
+signal duty_counter_r : std_logic_vector(7 downto 0) ; 
+
+signal m_out_l , m_out_r : std_logic ; 
+
+begin 
+
+u1: pwm_generate port map ( clk, duty_counter_l, m_out_l ); 
+u2: pwm_generate port map ( clk, duty_counter_r, m_out_r ); 
+
+transition : process ( sensor )
+begin
+	case sensor is
+		when "0000" => next_drive <= go ; 
+		when "0001" => next_drive <= back ; 
+		when "0010" => next_drive <= L  ; 
+		when "0000" =>
+		when "0000" =>
+		
+		
+		
+		when "1111" =>
+	end case ; 
+end process ; 
+
+
+action : process( next_drive )
+begin 
+	case next_drive is
+		when go 	=> duty_counter_l =x"80" ; duty_counter_r = "10000000"; 
+		when back => duty_counter_l=x"80" ; duty_counter_r = "10000000"; 
+		             l_dir <= "1" ; r_dir <= "0" ;    --go 상태의 dir의 반대로 설정 
+		when L =>duty_counter_l =x"80" ; duty_counter_r = "10000000"; 
+		when R =>
+
+
+      when others =>
+	end case ; 
+end process ; 
+
+
+
+process ( m_out_l, m_out_r )
+begin 
+
+	if clk'event and clk = '1' then 
+		l_pwm <= m_out_l ; 
+		l_dir <= '0' ; 
+		l_en <= '0' ; 
+		
+		r_pwm <= m_out_r ; 
+		r_dir <= '1' ; 
+		r_en <= '0' ; 
+	end if; 
+
+end process ; 
+
+
+
+
+end sam ; 
+
+	
+	
